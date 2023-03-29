@@ -121,11 +121,58 @@ def piece_movement(piece):
     global true_movelist
     movelist = []
     true_movelist = []
+    if piece.type is PieceType.KING:
+        movelist=[[tile_x-1,tile_y-1], [tile_x-1,tile_y], [tile_x-1, tile_y+1], [tile_x, tile_y+1],
+                  [tile_x+1, tile_y+1],[tile_x+1, tile_y],[tile_x+1, tile_y-1], [tile_x, tile_y-1]]
+        if piece.color is ColorType.WHITE:
+            for i in white_pieces_coordinates:
+                if i in movelist:
+                    movelist.remove(i)
+        if piece.color is ColorType.BLACK:
+            for i in black_pieces_coordinates:
+                if i in movelist:
+                    movelist.remove(i)
+        for i in reversed(movelist):
+            print(movelist)
+            if i[0]<1 or i[0]>8 or i[1]<1 or i[1]>8:
+                movelist.remove(i)
+            print(movelist)
+        true_movelist=movelist
+
+    if piece.type is PieceType.QUEEN:
+        movement_rook(piece.x,piece.y, piece)
+        movement_bishop(piece.x, piece.y, piece)
+    if piece.type is PieceType.ROOK:
+        movement_rook(piece.x, piece.y, piece)
     if piece.type is PieceType.BISHOP:
         movement_bishop(piece.x, piece.y, piece)
     if piece.type is PieceType.PAWN:
-        if piece.color is ColorType.WHITE and piece.y == 7:
-            pass
+        if piece.color is ColorType.WHITE:
+            movelist=[[tile_x, tile_y+1]]
+            if piece.y==2:
+                movelist.append([tile_x, tile_y+2])
+            for i in movelist:
+                if i in pieces_coordinates:
+                    movelist.remove(i)
+            for i in black_pieces_coordinates:
+                if [tile_x-1,tile_y+1]==i:
+                    movelist.append(i)
+                if [tile_x+1, tile_y+1]==i:
+                    movelist.append(i)
+        if piece.color is ColorType.BLACK:
+            movelist=[[tile_x, tile_y-1]]
+            if piece.y==7:
+                movelist.append([tile_x, tile_y-2])
+            for i in movelist:
+                if i in pieces_coordinates:
+                    movelist.remove(i)
+            for i in white_pieces_coordinates:
+                if [tile_x-1,tile_y-1]==i:
+                    movelist.append(i)
+                if [tile_x+1, tile_y-1]==i:
+                    movelist.append(i)
+
+        true_movelist=movelist
     if piece.type is PieceType.KNIGHT:
         movelist = [[tile_x - 2, tile_y - 1], [tile_x - 2, tile_y + 1], [tile_x + 1, tile_y - 2],
                     [tile_x + 1, tile_y + 2], [tile_x + 2, tile_y - 1], [tile_x + 2, tile_y + 1],
@@ -146,6 +193,77 @@ def piece_movement(piece):
 
 
     print(true_movelist)
+def movement_rook(x,y,piece):
+     global true_movelist
+     global movelist
+     for i in range(7):
+         coords = [x, y + i + 1]
+         if coords[0] >= 1 and coords[0] <= 8 and coords[1] >= 1 and coords[1] <= 8:
+             if piece.color is ColorType.BLACK:
+                 if coords in black_pieces_coordinates:
+                     break
+                 elif coords in white_pieces_coordinates:
+                     movelist.append(coords)
+                     break
+             if piece.color is ColorType.WHITE:
+                 if coords in white_pieces_coordinates:
+                     break
+                 elif coords in black_pieces_coordinates:
+                     movelist.append(coords)
+                     break
+             movelist.append(coords)
+     for i in range(7):
+         coords = [x, y - i - 1]
+         if coords[0] >= 1 and coords[0] <= 8 and coords[1] >= 1 and coords[1] <= 8:
+             if piece.color is ColorType.BLACK:
+                 if coords in black_pieces_coordinates:
+                     break
+                 elif coords in white_pieces_coordinates:
+                     movelist.append(coords)
+                     break
+             if piece.color is ColorType.WHITE:
+                 if coords in white_pieces_coordinates:
+                     break
+                 elif coords in black_pieces_coordinates:
+                     movelist.append(coords)
+                     break
+             movelist.append(coords)
+     for i in range(7):
+         coords = [x+i+1, y]
+         if coords[0] >= 1 and coords[0] <= 8 and coords[1] >= 1 and coords[1] <= 8:
+             if piece.color is ColorType.BLACK:
+                 if coords in black_pieces_coordinates:
+                     break
+                 elif coords in white_pieces_coordinates:
+                     movelist.append(coords)
+                     break
+             if piece.color is ColorType.WHITE:
+                 if coords in white_pieces_coordinates:
+                     break
+                 elif coords in black_pieces_coordinates:
+                     movelist.append(coords)
+                     break
+             movelist.append(coords)
+     for i in range(7):
+         coords = [x-i-1, y]
+         if coords[0] >= 1 and coords[0] <= 8 and coords[1] >= 1 and coords[1] <= 8:
+             if piece.color is ColorType.BLACK:
+                 if coords in black_pieces_coordinates:
+                     break
+                 elif coords in white_pieces_coordinates:
+                     movelist.append(coords)
+                     break
+             if piece.color is ColorType.WHITE:
+                 if coords in white_pieces_coordinates:
+                     break
+                 elif coords in black_pieces_coordinates:
+                     movelist.append(coords)
+                     break
+             movelist.append(coords)
+     true_movelist=movelist
+
+
+
 def movement_bishop(x,y, piece):
     global true_movelist
     global movelist
@@ -254,6 +372,7 @@ for i in range(8):
 pieces_coordinates = []
 
 print(pieces_coordinates)
+chess_turn=1
 true_movelist = []
 tile_x = 1
 tile_y = 1
@@ -304,14 +423,16 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             for i in game_pieces:
 
-                if i.x == tile_x and i.y == tile_y and selection == False and [tile_x, tile_y] in pieces_coordinates:
+                if i.x == tile_x and i.y == tile_y and [tile_x, tile_y] in pieces_coordinates and((chess_turn==1 and i.color is ColorType.WHITE) or (chess_turn == -1 and i.color is ColorType.BLACK)):
                     piece_movement(i)
                     mark = i
-                    selection = True
+
+
             if [tile_x, tile_y] in true_movelist:
                 for a in game_pieces:
                     if tile_x == a.x and tile_y == a.y:
                         game_pieces.remove(a)
+                chess_turn = chess_turn * (-1)
                 mark.x = tile_x
                 mark.y = tile_y
                 true_movelist = []
